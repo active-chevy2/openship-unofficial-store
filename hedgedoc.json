@@ -49,17 +49,16 @@
         "database"
       ],
       "environment": {
-        "CMD_DOMAIN": "{{publicUrl:hedgedoc}}",
         "CMD_PROTOCOL_USESSL": "true",
         "CMD_URL_ADDPORT": "false",
         "CMD_DB_DIALECT": "postgres",
         "CMD_DB_HOST": "database",
         "CMD_DB_PORT": "5432",
-        "CMD_DB_USER": "hedgedoc",
+        "CMD_DB_USERNAME": "hedgedoc",
         "CMD_DB_DATABASE": "hedgedoc"
       },
       "secretEnv": [
-        "CMD_DB_PASS"
+        "CMD_DB_PASSWORD"
       ],
       "volumes": [
         "hedgedoc_uploads:/hedgedoc/public/uploads"
@@ -68,6 +67,15 @@
     }
   ],
   "configFields": [
+    {
+      "service": "hedgedoc",
+      "key": "CMD_DOMAIN",
+      "label": "Domain / Hostname",
+      "help": "CRITICAL: Enter only the bare domain or subdomain without 'https://' or trailing slashes (e.g. md.example.com). Including a protocol will break CSS and JavaScript asset loading.",
+      "placeholder": "md.yourdomain.com",
+      "type": "text",
+      "required": true
+    },
     {
       "service": "database",
       "key": "POSTGRES_PASSWORD",
@@ -78,7 +86,7 @@
     },
     {
       "service": "hedgedoc",
-      "key": "CMD_DB_PASS",
+      "key": "CMD_DB_PASSWORD",
       "label": "HedgeDoc Database Password",
       "generate": "secret",
       "secret": true,
@@ -98,10 +106,16 @@
         "source": "publicUrl:hedgedoc",
         "kind": "url",
         "recommended": true
+      },
+      {
+        "id": "domain",
+        "label": "Configured Domain",
+        "source": "env:hedgedoc:CMD_DOMAIN",
+        "width": "half"
       }
     ],
     "firstLogin": {
-      "note": "Register your initial user account on first visit. The first user to sign up can configure admin privileges."
+      "note": "CONFIGURATION NOTICE: Verify that 'CMD_DOMAIN' matches your exact domain without any 'https://' prefix. If the web UI ever loads as plain unstyled text, check that CMD_DOMAIN does not contain a protocol prefix."
     }
   },
   "verified": true,
