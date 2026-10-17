@@ -1,14 +1,14 @@
-# Active Chevy 2's Unofficial Openship App Store
+# Active Chevy 2's Openship App Collection
 
 <a href="https://www.aihonestybadge.com" target="_blank" rel="noopener"><img src="https://www.aihonestybadge.com/badges/ai-generated-large.svg" alt="AI Generated" height="28"></a>
 
-A community collection of JSON app definitions for [Openship](https://openship.io). Each file describes one self-hostable app: which Docker images to run, which settings the user needs to fill in, and what the user sees once the app is running.
+My personal collection of [Openship](https://openship.io) app definitions. Each JSON file describes one self-hostable app: which Docker images to run, which settings to fill in, and what to show once the app is running.
 
-This is an unofficial, community-maintained repository. It is not affiliated with or endorsed by the Openship project. Each app belongs to its own developers, and the logos, names and trademarks belong to their owners.
+The files were made by converting upstream `docker-compose.yml` files into Openship JSON, with help from AI tools. I wrote this collection for my own self-hosting. It is not affiliated with or endorsed by the Openship project, or by any of the apps listed here. Each app belongs to its own developers, and the names, logos and trademarks belong to their owners.
 
 ## What is included
 
-The repository currently has 23 app definitions:
+The collection has 23 app definitions:
 
 | File | App | Category | Purpose |
 |---|---|---|---|
@@ -37,10 +37,10 @@ The repository currently has 23 app definitions:
 
 ## How it works
 
-Openship reads a JSON file for each app and uses it to:
+Openship reads each JSON file and uses it to:
 
 1. Pull the Docker images listed under `services`.
-2. Ask the user for the values in `configFields`. Fields marked `"generate": "secret"` get a random value automatically.
+2. Ask for the values in `configFields`. Fields marked `"generate": "secret"` get a random value automatically.
 3. Start the containers, with health checks and restart rules.
 4. Show the links and details in `connection` once the app is ready.
 
@@ -59,13 +59,13 @@ Each app file is a JSON object with these main fields:
 | `available` | Yes | `true` lists the app in the store, `false` hides it |
 | `kind` | Yes | Currently `"template"` for every app here |
 | `logo` | Yes | Logo name used by the store |
-| `category` | Yes | One of `backend`, `cms`, `other` and similar groups |
+| `category` | Yes | Group such as `backend`, `cms` or `other` |
 | `tags` | Yes | Search keywords |
 | `framework` | Yes | Currently `"docker-compose"` for every app here |
 | `services` | Yes | The containers to run: image, ports, environment, volumes, health checks and restart policy |
 | `configFields` | No | Settings the user fills in. Use `"secret": true` for passwords, and `"generate": "secret"` for values Openship should create |
 | `connection` | Yes | Title, description and output links shown after install. Can also include a `firstLogin` note |
-| `verified` | No | Marks an app that has been checked |
+| `verified` | No | Set to `true` only after I have tested the install myself |
 | `marketplace` | No | Feature highlights shown in the store |
 
 ### Example
@@ -104,28 +104,28 @@ Each app file is a JSON object with these main fields:
       }
     ]
   },
-  "verified": true
+  "verified": false
 }
 ```
 
-## Adding a new app
+## Converting a new app
 
-1. Create a new file named after the app, for example `my-app.json`, in the repository root.
-2. Fill in the required fields above. Use a unique `id`.
-3. Pin the Docker image to a specific version tag where possible. Avoid `latest` for anything you want stable.
-4. Add a `configFields` entry for every password, key or secret the app needs. Mark them with `"generate": "secret"` where Openship can create them.
-5. Use `publicUrl:<service>` for links that should point to the app's public address.
-6. Check the JSON is valid, for example with `python3 -m json.tool my-app.json`.
-7. Open a pull request.
+1. Start from the upstream project's `docker-compose.yml`.
+2. Create a JSON file named after the app, for example `my-app.json`.
+3. Fill in the required fields above, and use a unique `id`.
+4. Pin the image to a specific version tag where possible. Avoid `latest` for anything I want stable.
+5. Add a `configFields` entry for each password, key or secret. Mark them with `"generate": "secret"` where Openship can create them.
+6. Use `publicUrl:<service>` for links that should point to the app's public address.
+7. Check the JSON is valid, for example with `python3 -m json.tool my-app.json`.
+8. Test the install before setting `"verified": true`.
 
-## Guidelines
+## Notes
 
-- Use official or well-known upstream images, and say where an image comes from if it is not the project's own registry.
+- AI tools helped convert these files, so check each one against the upstream compose file before using it.
 - Never put real passwords, keys or tokens in a file. Use `configFields` with `"generate": "secret"`.
-- Keep descriptions short and factual.
-- Only set `"verified": true` after you have actually tested the app install.
-- If an app has a default login, say so in `connection.firstLogin` and tell the user to change it straight away.
+- If an app has a default login, the `connection.firstLogin` note says so. Change the default password straight away.
+- Upstream projects are the source of the apps. Their own docs and licences apply to the software.
 
 ## Licence
 
-Add your chosen licence here. The app definitions in this repository are the work of their contributors. The apps themselves remain under their own licences.
+To be decided. The JSON definitions in this repository are my own work. The apps they describe remain under their upstream licences.
