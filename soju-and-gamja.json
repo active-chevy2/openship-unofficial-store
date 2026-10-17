@@ -1,0 +1,81 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "soju",
+  "name": "Soju & Gamja",
+  "description": "A user-friendly IRC bouncer with the modern Gamja web interface.",
+  "kind": "template",
+  "logo": "soju",
+  "category": "other",
+  "tags": [
+    "irc",
+    "bouncer",
+    "chat",
+    "messaging"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "gamja-backend",
+      "image": "codeberg.org/emersion/soju:latest",
+      "volumes": [
+        "soju_db:/db",
+        "soju_uploads:/uploads",
+        "soju_run:/run/soju"
+      ],
+      "ports": [
+        "6667:6667"
+      ],
+      "restart": "unless-stopped"
+    },
+    {
+      "name": "gamja",
+      "image": "codeberg.org/emersion/gamja:latest",
+      "exposedPort": 80,
+      "exposed": true,
+      "dependsOn": [
+        "gamja-backend"
+      ],
+      "restart": "unless-stopped"
+    }
+  ],
+  "files": [
+    {
+      "service": "gamja-backend",
+      "path": "/soju-config",
+      "content": "db sqlite3 /db/main.db\nmessage-store db\nfile-upload fs /uploads/\nlisten irc+insecure://0.0.0.0:6667\nlisten ws+insecure://0.0.0.0:80\nlisten unix+admin:///run/soju/admin\n"
+    }
+  ],
+  "connection": {
+    "title": "Open Gamja Web IRC",
+    "description": "Your Soju IRC bouncer and Gamja web client are running.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open Gamja Web IRC",
+        "source": "publicUrl:gamja",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "To create your initial administrator account, run this inside the bouncer container terminal: sojudb -config /soju-config create-user <username> -admin"
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Persistent IRC Bouncer",
+        "description": "Stay connected to your favourite IRC networks with full message history and scrollback."
+      },
+      {
+        "title": "Modern Web Client",
+        "description": "Access your bouncer from any browser via the responsive Gamja interface."
+      }
+    ]
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "zipline",
+  "name": "Zipline",
+  "description": "A ShareX/file upload server that is easy to use, packed with features, and with an easy setup.",
+  "kind": "template",
+  "logo": "zipline",
+  "category": "other",
+  "tags": [
+    "zipline",
+    "file-sharing",
+    "upload",
+    "sharing"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "postgres",
+      "image": "postgres:16-alpine",
+      "restart": "unless-stopped",
+      "environment": {
+        "POSTGRES_USER": "zipline",
+        "POSTGRES_DB": "zipline"
+      },
+      "secretEnv": [
+        "POSTGRES_PASSWORD"
+      ],
+      "volumes": [
+        "zipline_postgres_data:/var/lib/postgresql/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U zipline -d zipline"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      }
+    },
+    {
+      "name": "zipline",
+      "image": "ghcr.io/diced/zipline:latest",
+      "exposedPort": 3000,
+      "exposed": true,
+      "dependsOn": [
+        "postgres"
+      ],
+      "environment": {
+        "CORE_RETURN_HTTPS": "true",
+        "CORE_LOGGER": "true",
+        "DATABASE_HOST": "postgres",
+        "DATABASE_PORT": "5432",
+        "DATABASE_NAME": "zipline",
+        "DATABASE_USERNAME": "zipline"
+      },
+      "secretEnv": [
+        "CORE_SECRET",
+        "DATABASE_PASSWORD"
+      ],
+      "volumes": [
+        "zipline_uploads:/zipline/uploads",
+        "zipline_public:/zipline/public"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "wget",
+          "-q",
+          "--spider",
+          "http://127.0.0.1:3000/auth/login"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "postgres",
+      "key": "POSTGRES_PASSWORD",
+      "label": "PostgreSQL Password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "zipline-db"
+    },
+    {
+      "service": "zipline",
+      "key": "DATABASE_PASSWORD",
+      "label": "Zipline Database Password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "zipline-db"
+    },
+    {
+      "service": "zipline",
+      "key": "CORE_SECRET",
+      "label": "Core Cookie Secret",
+      "generate": "secret",
+      "secret": true
+    }
+  ],
+  "connection": {
+    "title": "Set up Zipline",
+    "description": "Your private file upload and ShareX server is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open Zipline",
+        "source": "publicUrl:zipline",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "The default administrator username is 'administrator' with password 'password'. Log in and change this default password immediately."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "ShareX & File Uploads",
+        "description": "Easily upload and manage screenshots, files, and text from desktop clients."
+      },
+      {
+        "title": "Private Database",
+        "description": "Powered by a dedicated PostgreSQL database isolated to your project network."
+      }
+    ]
+  }
+}

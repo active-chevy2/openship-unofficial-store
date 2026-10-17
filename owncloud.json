@@ -1,0 +1,195 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "owncloud",
+  "name": "ownCloud",
+  "description": "ownCloud integrates file management with a powerful, user-friendly interface.",
+  "kind": "template",
+  "logo": "owncloud",
+  "category": "other",
+  "tags": [
+    "owncloud",
+    "file-management",
+    "cloud",
+    "storage"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "redis",
+      "image": "redis:6-alpine",
+      "commandArgv": [
+        "--databases",
+        "1"
+      ],
+      "restart": "unless-stopped",
+      "volumes": [
+        "redis_data:/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      }
+    },
+    {
+      "name": "mariadb",
+      "image": "mariadb:latest",
+      "restart": "unless-stopped",
+      "environment": {
+        "MYSQL_USER": "owncloud",
+        "MYSQL_DATABASE": "owncloud",
+        "TZ": "auto"
+      },
+      "secretEnv": [
+        "MYSQL_ROOT_PASSWORD",
+        "MYSQL_PASSWORD"
+      ],
+      "commandArgv": [
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_bin",
+        "--max-allowed-packet=128M",
+        "--innodb-log-file-size=64M"
+      ],
+      "volumes": [
+        "mariadb_data:/var/lib/mysql"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "healthcheck.sh",
+          "--connect",
+          "--innodb_initialized"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      }
+    },
+    {
+      "name": "owncloud",
+      "image": "owncloud/server:latest",
+      "exposedPort": 8080,
+      "exposed": true,
+      "dependsOn": [
+        "mariadb",
+        "redis"
+      ],
+      "environment": {
+        "OWNCLOUD_DOMAIN": "{{publicUrl:owncloud}}",
+        "OWNCLOUD_TRUSTED_DOMAINS": "{{publicUrl:owncloud}}",
+        "OWNCLOUD_DB_TYPE": "mysql",
+        "OWNCLOUD_DB_HOST": "mariadb",
+        "OWNCLOUD_DB_NAME": "owncloud",
+        "OWNCLOUD_DB_USERNAME": "owncloud",
+        "OWNCLOUD_MYSQL_UTF8MB4": "true",
+        "OWNCLOUD_REDIS_ENABLED": "true",
+        "OWNCLOUD_REDIS_HOST": "redis"
+      },
+      "secretEnv": [
+        "OWNCLOUD_DB_PASSWORD",
+        "OWNCLOUD_ADMIN_PASSWORD"
+      ],
+      "volumes": [
+        "owncloud_data:/mnt/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "/usr/bin/healthcheck"
+        ],
+        "interval": "30s",
+        "timeout": "10s",
+        "retries": 5
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "mariadb",
+      "key": "MYSQL_ROOT_PASSWORD",
+      "label": "Database root password",
+      "generate": "secret",
+      "secret": true
+    },
+    {
+      "service": "mariadb",
+      "key": "MYSQL_PASSWORD",
+      "label": "Database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "owncloud-db"
+    },
+    {
+      "service": "owncloud",
+      "key": "OWNCLOUD_DB_PASSWORD",
+      "label": "ownCloud Database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "owncloud-db"
+    },
+    {
+      "service": "owncloud",
+      "key": "OWNCLOUD_ADMIN_USERNAME",
+      "label": "Admin username",
+      "type": "text",
+      "default": "admin",
+      "required": true
+    },
+    {
+      "service": "owncloud",
+      "key": "OWNCLOUD_ADMIN_PASSWORD",
+      "label": "Admin password",
+      "generate": "secret",
+      "secret": true
+    }
+  ],
+  "connection": {
+    "title": "Set up ownCloud",
+    "description": "Your private file sync and share server is ready to use.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open ownCloud",
+        "source": "publicUrl:owncloud",
+        "kind": "url",
+        "recommended": true
+      },
+      {
+        "id": "username",
+        "label": "Admin username",
+        "source": "env:owncloud:OWNCLOUD_ADMIN_USERNAME",
+        "width": "half"
+      },
+      {
+        "id": "password",
+        "label": "Admin password",
+        "source": "env:owncloud:OWNCLOUD_ADMIN_PASSWORD",
+        "secret": true,
+        "width": "half"
+      }
+    ]
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Private Cloud Storage",
+        "description": "Self-hosted file sync and share server."
+      },
+      {
+        "title": "Redis Caching",
+        "description": "High-performance memory caching enabled by default for faster file access."
+      }
+    ]
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "bookstack",
+  "name": "BookStack",
+  "description": "A simple, self-hosted, easy-to-use platform for organising and storing information.",
+  "kind": "template",
+  "logo": "bookstack",
+  "category": "cms",
+  "tags": [
+    "free-and-open-source",
+    "mfa",
+    "notes",
+    "diagrams"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "mariadb",
+      "image": "lscr.io/linuxserver/mariadb:latest",
+      "restart": "unless-stopped",
+      "environment": {
+        "PUID": "1000",
+        "PGID": "1000",
+        "TZ": "Asia/Kuching",
+        "MYSQL_DATABASE": "bookstack",
+        "MYSQL_USER": "bookstack"
+      },
+      "secretEnv": [
+        "MYSQL_ROOT_PASSWORD",
+        "MYSQL_PASSWORD"
+      ],
+      "volumes": [
+        "bookstack_mariadb_data:/config"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "127.0.0.1"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      }
+    },
+    {
+      "name": "bookstack",
+      "image": "lscr.io/linuxserver/bookstack:latest",
+      "exposedPort": 80,
+      "exposed": true,
+      "dependsOn": [
+        "mariadb"
+      ],
+      "environment": {
+        "APP_URL": "{{publicUrl:bookstack}}",
+        "PUID": "1000",
+        "PGID": "1000",
+        "TZ": "Asia/Kuching",
+        "DB_HOST": "mariadb",
+        "DB_PORT": "3306",
+        "DB_DATABASE": "bookstack",
+        "DB_USERNAME": "bookstack"
+      },
+      "secretEnv": [
+        "APP_KEY",
+        "DB_PASSWORD"
+      ],
+      "volumes": [
+        "bookstack_data:/config"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "curl -f http://127.0.0.1:80/"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "mariadb",
+      "key": "MYSQL_ROOT_PASSWORD",
+      "label": "Database root password",
+      "generate": "secret",
+      "secret": true
+    },
+    {
+      "service": "mariadb",
+      "key": "MYSQL_PASSWORD",
+      "label": "Database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "bookstack-db"
+    },
+    {
+      "service": "bookstack",
+      "key": "DB_PASSWORD",
+      "label": "BookStack database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "bookstack-db"
+    },
+    {
+      "service": "bookstack",
+      "key": "APP_KEY",
+      "label": "Application Key",
+      "generate": "secret",
+      "secret": true
+    }
+  ],
+  "connection": {
+    "title": "Set up BookStack",
+    "description": "Your self-hosted documentation platform is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open BookStack",
+        "source": "publicUrl:bookstack",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "The default BookStack login is 'admin@admin.com' with the password 'password'. Please log in and change this immediately."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Organised Documentation",
+        "description": "Store information in a simple Book, Chapter, and Page hierarchy."
+      },
+      {
+        "title": "Private Database",
+        "description": "Runs on a dedicated MariaDB instance isolated to your project."
+      }
+    ]
+  }
+}

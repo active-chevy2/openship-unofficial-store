@@ -1,0 +1,81 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "navidrome",
+  "name": "Navidrome",
+  "description": "Standalone server that allows you to browse and listen to your music collection using a web browser or any Subsonic-compatible client.",
+  "kind": "template",
+  "logo": "navidrome",
+  "category": "other",
+  "tags": [
+    "media",
+    "server",
+    "music",
+    "subsonic"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "navidrome",
+      "image": "deluan/navidrome:latest",
+      "exposedPort": 4533,
+      "exposed": true,
+      "environment": {
+        "ND_BASEURL": "{{publicUrl:navidrome}}",
+        "ND_SCANSCHEDULE": "1h",
+        "ND_LOGLEVEL": "info",
+        "ND_SESSIONTIMEOUT": "24h",
+        "ND_ENABLEINSIGHTSCOLLECTOR": "false"
+      },
+      "volumes": [
+        "navidrome_data:/data",
+        "navidrome_music:/music"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "wget",
+          "--spider",
+          "--quiet",
+          "http://127.0.0.1:4533/ping"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "connection": {
+    "title": "Set up Navidrome",
+    "description": "Your standalone music server is running.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open Navidrome",
+        "source": "publicUrl:navidrome",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "The first user to log in will create the administrative account. You can then upload music directly into the 'navidrome_music' volume via SFTP or your host terminal."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Subsonic Compatible",
+        "description": "Stream your music to any client supporting the Subsonic API."
+      },
+      {
+        "title": "Resource Efficient",
+        "description": "Written in Go, Navidrome uses minimal RAM and CPU, making it perfect for self-hosting."
+      }
+    ]
+  }
+}

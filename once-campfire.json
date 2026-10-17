@@ -1,0 +1,91 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "campfire",
+  "name": "ONCE Campfire",
+  "description": "Super simple group chat, without a subscription.",
+  "kind": "template",
+  "logo": "campfire",
+  "category": "other",
+  "tags": [
+    "campfire",
+    "chat",
+    "communication",
+    "rails",
+    "basecamp"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "campfire",
+      "image": "ghcr.io/basecamp/once-campfire:main",
+      "exposedPort": 80,
+      "exposed": true,
+      "environment": {
+        "DISABLE_SSL": "true",
+        "SSL_DOMAIN": "false",
+        "SKIP_TELEMETRY": "true"
+      },
+      "secretEnv": [
+        "SECRET_KEY_BASE"
+      ],
+      "volumes": [
+        "campfire_storage:/rails/storage"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost/up"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "campfire",
+      "key": "SECRET_KEY_BASE",
+      "label": "Rails Secret Key Base",
+      "help": "Cryptographic key used to verify and salt session cookies.",
+      "generate": "secret",
+      "secret": true
+    }
+  ],
+  "connection": {
+    "title": "Set up Campfire",
+    "description": "Your self-hosted group chat is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open Campfire",
+        "source": "publicUrl:campfire",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "On your first visit, follow the initial on-screen wizard to claim the instance and set up your owner account."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "One-Time Ownership",
+        "description": "Super simple group chat software that you own and run on your own server."
+      },
+      {
+        "title": "Persistent Storage",
+        "description": "SQLite databases, uploads, and chat history are safely stored in the persistent campfire_storage volume."
+      }
+    ]
+  }
+}

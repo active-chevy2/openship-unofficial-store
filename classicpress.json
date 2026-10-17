@@ -1,0 +1,132 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "classicpress",
+  "name": "ClassicPress",
+  "description": "A lightweight, stable, instantly familiar free open-source content management system, based on WordPress without the block editor.",
+  "kind": "template",
+  "logo": "classicpress",
+  "category": "cms",
+  "tags": [
+    "cms",
+    "blog",
+    "content",
+    "management"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "mariadb",
+      "image": "mariadb:11",
+      "restart": "unless-stopped",
+      "environment": {
+        "MYSQL_DATABASE": "classicpress",
+        "MYSQL_USER": "classicpress"
+      },
+      "secretEnv": [
+        "MYSQL_ROOT_PASSWORD",
+        "MYSQL_PASSWORD"
+      ],
+      "volumes": [
+        "mariadb_data:/var/lib/mysql"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "healthcheck.sh",
+          "--connect",
+          "--innodb_initialized"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      }
+    },
+    {
+      "name": "classicpress",
+      "image": "classicpress/classicpress:latest",
+      "exposedPort": 80,
+      "exposed": true,
+      "dependsOn": [
+        "mariadb"
+      ],
+      "environment": {
+        "CLASSICPRESS_DB_HOST": "mariadb",
+        "CLASSICPRESS_DB_USER": "classicpress",
+        "CLASSICPRESS_DB_NAME": "classicpress"
+      },
+      "secretEnv": [
+        "CLASSICPRESS_DB_PASSWORD"
+      ],
+      "volumes": [
+        "classicpress_files:/var/www/html"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://127.0.0.1"
+        ],
+        "interval": "2s",
+        "timeout": "10s",
+        "retries": 10
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "mariadb",
+      "key": "MYSQL_ROOT_PASSWORD",
+      "label": "Database root password",
+      "generate": "secret",
+      "secret": true
+    },
+    {
+      "service": "mariadb",
+      "key": "MYSQL_PASSWORD",
+      "label": "Database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "classicpress-db"
+    },
+    {
+      "service": "classicpress",
+      "key": "CLASSICPRESS_DB_PASSWORD",
+      "label": "ClassicPress database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "classicpress-db"
+    }
+  ],
+  "connection": {
+    "title": "Set up ClassicPress",
+    "description": "Your lightweight CMS is ready. Complete the famous 5-minute installation screen to set up your admin account.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open ClassicPress",
+        "source": "publicUrl:classicpress",
+        "kind": "url",
+        "recommended": true
+      }
+    ]
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Familiar Interface",
+        "description": "Based on WordPress, but completely free of the Gutenberg block editor."
+      },
+      {
+        "title": "Private Database",
+        "description": "Runs on a dedicated MariaDB instance isolated to your project."
+      }
+    ]
+  }
+}

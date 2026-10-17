@@ -1,0 +1,62 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "vert",
+  "name": "VERT",
+  "description": "The next-generation file converter. Open source, fully local and free forever.",
+  "kind": "template",
+  "logo": "vert",
+  "category": "other",
+  "tags": [
+    "converter",
+    "file",
+    "documents",
+    "ffmpeg",
+    "wasm"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "vert",
+      "image": "ghcr.io/vert-sh/vert:latest",
+      "exposedPort": 80,
+      "exposed": true,
+      "environment": {
+        "PUB_VERT_URL": "{{publicUrl:vert}}",
+        "PUB_HOSTNAME": "{{publicUrl:vert}}",
+        "PUB_PORT": "80",
+        "PUB_ENV": "production"
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "connection": {
+    "title": "Open VERT",
+    "description": "Your self-hosted local file converter is ready to use.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open VERT",
+        "source": "publicUrl:vert",
+        "kind": "url",
+        "recommended": true
+      }
+    ]
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Local Processing",
+        "description": "Converts files and media entirely locally using WebAssembly and FFmpeg."
+      },
+      {
+        "title": "Private & Sovereign",
+        "description": "Files remain entirely within your browser and server environment without third-party tracking."
+      }
+    ]
+  }
+}

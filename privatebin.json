@@ -1,0 +1,67 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "privatebin",
+  "name": "PrivateBin",
+  "description": "A minimalist, open-source online pastebin where the server has zero knowledge of pasted data.",
+  "kind": "template",
+  "logo": "privatebin",
+  "category": "other",
+  "tags": [
+    "text",
+    "sharing",
+    "pastebin",
+    "privacy"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "privatebin",
+      "image": "privatebin/nginx-fpm-alpine:latest",
+      "exposedPort": 8080,
+      "exposed": true,
+      "volumes": [
+        "privatebin_data:/srv/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:8080/"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "connection": {
+    "title": "Open PrivateBin",
+    "description": "Your zero-knowledge encrypted pastebin is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open PrivateBin",
+        "source": "publicUrl:privatebin",
+        "kind": "url",
+        "recommended": true
+      }
+    ]
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Zero-Knowledge Encryption",
+        "description": "Content is encrypted and decrypted directly inside the web browser before sending."
+      },
+      {
+        "title": "Persistent Data",
+        "description": "Encrypted paste blobs remain stored safely across updates in the privatebin_data volume."
+      }
+    ]
+  }
+}

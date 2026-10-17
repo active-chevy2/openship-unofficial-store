@@ -1,0 +1,79 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "pocket-id",
+  "name": "Pocket ID",
+  "description": "A simple and secure OIDC provider with passkey authentication.",
+  "kind": "template",
+  "logo": "pocket-id",
+  "category": "other",
+  "tags": [
+    "identity",
+    "oidc",
+    "oauth",
+    "passkey",
+    "sso"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "pocket-id",
+      "image": "ghcr.io/pocket-id/pocket-id:v1.13",
+      "exposedPort": 1411,
+      "exposed": true,
+      "environment": {
+        "APP_URL": "{{publicUrl:pocket-id}}",
+        "TRUST_PROXY": "true",
+        "PUID": "1000",
+        "PGID": "1000"
+      },
+      "volumes": [
+        "pocket_id_data:/app/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "/app/pocket-id",
+          "healthcheck"
+        ],
+        "interval": "30s",
+        "timeout": "5s",
+        "retries": 3,
+        "startPeriod": "10s"
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "connection": {
+    "title": "Set up Pocket ID",
+    "description": "Your self-hosted OIDC and passkey identity provider is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open Pocket ID",
+        "source": "publicUrl:pocket-id",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "On your first visit, you will be prompted to create the initial administrator account and set up your passkey."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Passkey Authentication",
+        "description": "Modern, passwordless login powered by WebAuthn passkeys."
+      },
+      {
+        "title": "OIDC Provider",
+        "description": "Seamlessly integrate OpenID Connect authentication with all your self-hosted services."
+      }
+    ]
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "pds",
+  "name": "Bluesky PDS",
+  "description": "Bluesky Personal Data Server (PDS) for the AT Protocol.",
+  "kind": "template",
+  "logo": "bluesky",
+  "category": "backend",
+  "tags": [
+    "bluesky",
+    "pds",
+    "platform",
+    "social"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "pds",
+      "image": "ghcr.io/bluesky-social/pds:0.4.182",
+      "exposedPort": 3000,
+      "exposed": true,
+      "environment": {
+        "PDS_HOSTNAME": "{{publicUrl:pds}}",
+        "PDS_DATA_DIRECTORY": "/pds",
+        "PDS_BLOBSTORE_DISK_LOCATION": "/pds/blocks",
+        "PDS_BLOB_UPLOAD_LIMIT": "104857600",
+        "PDS_DID_PLC_URL": "https://plc.directory",
+        "PDS_BSKY_APP_VIEW_URL": "https://api.bsky.app",
+        "PDS_BSKY_APP_VIEW_DID": "did:web:api.bsky.app",
+        "PDS_REPORT_SERVICE_URL": "https://mod.bsky.app/xrpc/com.atproto.moderation.createReport",
+        "PDS_REPORT_SERVICE_DID": "did:plc:ar7c4by46qjdydhdevvrndac",
+        "PDS_CRAWLERS": "https://bsky.network",
+        "LOG_ENABLED": "true"
+      },
+      "secretEnv": [
+        "PDS_JWT_SECRET",
+        "PDS_ADMIN_PASSWORD",
+        "PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX"
+      ],
+      "volumes": [
+        "pds_data:/pds"
+      ],
+      "commandArgv": [
+        "sh",
+        "-c",
+        "set -euo pipefail\necho \"Installing required packages and pdsadmin...\"\napk add --no-cache openssl curl bash jq coreutils gnupg util-linux-misc >/dev/null\ncurl -o /usr/local/bin/pdsadmin.sh https://raw.githubusercontent.com/bluesky-social/pds/main/pdsadmin.sh\nchmod 700 /usr/local/bin/pdsadmin.sh\nln -sf /usr/local/bin/pdsadmin.sh /usr/local/bin/pdsadmin\necho \"Creating an empty pds.env file so pdsadmin works...\"\ntouch /pds/pds.env\necho \"Launching PDS, enjoy!...\"\nexec node --enable-source-maps index.js"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "wget",
+          "--spider",
+          "http://127.0.0.1:3000/xrpc/_health"
+        ],
+        "interval": "5s",
+        "timeout": "10s",
+        "retries": 10
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "pds",
+      "key": "PDS_ADMIN_EMAIL",
+      "label": "Admin Email",
+      "type": "text",
+      "default": "admin@example.com",
+      "required": true
+    },
+    {
+      "service": "pds",
+      "key": "PDS_ADMIN_PASSWORD",
+      "label": "Admin Password",
+      "generate": "secret",
+      "secret": true
+    },
+    {
+      "service": "pds",
+      "key": "PDS_JWT_SECRET",
+      "label": "JWT Secret",
+      "generate": "secret",
+      "secret": true
+    },
+    {
+      "service": "pds",
+      "key": "PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX",
+      "label": "PLC Rotation Key",
+      "generate": "secret",
+      "secret": true
+    }
+  ],
+  "connection": {
+    "title": "Set up Bluesky PDS",
+    "description": "Your Personal Data Server for the AT Protocol is running.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open PDS",
+        "source": "publicUrl:pds",
+        "kind": "url",
+        "recommended": true
+      },
+      {
+        "id": "email",
+        "label": "Admin Email",
+        "source": "env:pds:PDS_ADMIN_EMAIL",
+        "width": "half"
+      },
+      {
+        "id": "password",
+        "label": "Admin Password",
+        "source": "env:pds:PDS_ADMIN_PASSWORD",
+        "secret": true,
+        "width": "half"
+      }
+    ],
+    "firstLogin": {
+      "note": "Use the provided Admin Email and Password to run administration commands via `pdsadmin` inside the container terminal, or to log into compatible PDS management clients."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "AT Protocol Federation",
+        "description": "Self-host your identity, data, and social graph on the Bluesky network."
+      },
+      {
+        "title": "Built-in pdsadmin",
+        "description": "Automatically installs the pdsadmin CLI tool inside the container for easy account management."
+      }
+    ]
+  }
+}

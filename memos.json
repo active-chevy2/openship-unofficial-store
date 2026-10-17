@@ -1,0 +1,61 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "memos",
+  "name": "Memos",
+  "description": "An open-source, lightweight note-taking solution. The pain-less way to create your meaningful notes.",
+  "kind": "template",
+  "logo": "memos",
+  "category": "other",
+  "tags": [
+    "note-taking",
+    "microblog",
+    "social-network",
+    "markdown"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "memos",
+      "image": "neosmemo/memos:stable",
+      "exposedPort": 5230,
+      "exposed": true,
+      "volumes": [
+        "memos_data:/var/opt/memos"
+      ],
+      "restart": "unless-stopped"
+    }
+  ],
+  "connection": {
+    "title": "Set up Memos",
+    "description": "Your lightweight note-taking environment is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open Memos",
+        "source": "publicUrl:memos",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "Claim your administrator account immediately. The first person to register on this instance automatically becomes the owner."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Lightweight Note-taking",
+        "description": "A privacy-first space to capture your thoughts."
+      },
+      {
+        "title": "Markdown Support",
+        "description": "Format your notes effortlessly using standard Markdown."
+      }
+    ]
+  }
+}

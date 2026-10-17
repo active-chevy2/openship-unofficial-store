@@ -1,0 +1,138 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "codimd",
+  "name": "CodiMD",
+  "description": "Realtime collaborative markdown notes on all platforms.",
+  "kind": "template",
+  "logo": "codimd",
+  "category": "other",
+  "tags": [
+    "markdown",
+    "collaborative",
+    "editor",
+    "notes"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "postgres",
+      "image": "postgres:16-alpine",
+      "restart": "unless-stopped",
+      "environment": {
+        "POSTGRES_USER": "codimd",
+        "POSTGRES_DB": "codimd"
+      },
+      "secretEnv": [
+        "POSTGRES_PASSWORD"
+      ],
+      "volumes": [
+        "codimd_postgres_data:/var/lib/postgresql/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U codimd -d codimd"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      }
+    },
+    {
+      "name": "codimd",
+      "image": "nabo.codimd.dev/hackmdio/hackmd:latest",
+      "exposedPort": 3000,
+      "exposed": true,
+      "dependsOn": [
+        "postgres"
+      ],
+      "environment": {
+        "CMD_DOMAIN": "{{publicUrl:codimd}}",
+        "CMD_PROTOCOL_USESSL": "true",
+        "CMD_USECDN": "false",
+        "CMD_EMAIL": "true",
+        "CMD_ALLOW_EMAIL_REGISTER": "true",
+        "CMD_DB_DIALECT": "postgres",
+        "CMD_DB_HOST": "postgres",
+        "CMD_DB_PORT": "5432",
+        "CMD_DB_USERNAME": "codimd",
+        "CMD_DB_DATABASE": "codimd"
+      },
+      "secretEnv": [
+        "CMD_SESSION_SECRET",
+        "CMD_DB_PASSWORD"
+      ],
+      "volumes": [
+        "codimd_uploads:/home/hackmd/app/public/uploads"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "curl -f http://localhost:3000/ || exit 1"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 5
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "postgres",
+      "key": "POSTGRES_PASSWORD",
+      "label": "Database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "codimd-db"
+    },
+    {
+      "service": "codimd",
+      "key": "CMD_DB_PASSWORD",
+      "label": "CodiMD database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "codimd-db"
+    },
+    {
+      "service": "codimd",
+      "key": "CMD_SESSION_SECRET",
+      "label": "Session Secret",
+      "generate": "secret",
+      "secret": true
+    }
+  ],
+  "connection": {
+    "title": "Set up CodiMD",
+    "description": "Your real-time collaborative workspace is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open CodiMD",
+        "source": "publicUrl:codimd",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "Email registration is enabled by default. Click 'Register' on the main screen to create your account."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Real-time Collaboration",
+        "description": "Edit Markdown documents simultaneously with your team."
+      },
+      {
+        "title": "Private Database",
+        "description": "Powered by a dedicated PostgreSQL database on your project network."
+      }
+    ]
+  }
+}

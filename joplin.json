@@ -1,0 +1,128 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "joplin",
+  "name": "Joplin Server",
+  "description": "Self-hosted sync server for Joplin.",
+  "kind": "template",
+  "logo": "joplin",
+  "category": "other",
+  "tags": [
+    "productivity",
+    "notes",
+    "sync",
+    "joplin"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "postgres",
+      "image": "postgres:16",
+      "restart": "unless-stopped",
+      "environment": {
+        "POSTGRES_USER": "joplin",
+        "POSTGRES_DB": "joplin"
+      },
+      "secretEnv": [
+        "POSTGRES_PASSWORD"
+      ],
+      "volumes": [
+        "joplin_db_data:/var/lib/postgresql/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "pg_isready",
+          "-d",
+          "joplin"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      }
+    },
+    {
+      "name": "joplin",
+      "image": "joplin/server:latest",
+      "exposedPort": 22300,
+      "exposed": true,
+      "dependsOn": [
+        "postgres"
+      ],
+      "environment": {
+        "APP_BASE_URL": "{{publicUrl:joplin}}",
+        "DB_CLIENT": "pg",
+        "POSTGRES_DATABASE": "joplin",
+        "POSTGRES_USER": "joplin",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_HOST": "postgres"
+      },
+      "secretEnv": [
+        "POSTGRES_PASSWORD"
+      ],
+      "volumes": [
+        "joplin_data:/var/lib/joplin"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "bash -c ':> /dev/tcp/127.0.0.1/22300' || exit 1"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 3
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "postgres",
+      "key": "POSTGRES_PASSWORD",
+      "label": "Database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "joplin-db"
+    },
+    {
+      "service": "joplin",
+      "key": "POSTGRES_PASSWORD",
+      "label": "Joplin database password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "joplin-db"
+    }
+  ],
+  "connection": {
+    "title": "Set up Joplin Server",
+    "description": "Your self-hosted sync server is running.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open Joplin Server",
+        "source": "publicUrl:joplin",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "The default login is 'admin@localhost' with the password 'admin'. Please log in and change these credentials immediately."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Sync Server",
+        "description": "Synchronise your Joplin notes seamlessly across all your devices."
+      },
+      {
+        "title": "Private Database",
+        "description": "Uses a dedicated PostgreSQL database isolated to your project network."
+      }
+    ]
+  }
+}

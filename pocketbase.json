@@ -1,0 +1,67 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "pocketbase",
+  "name": "PocketBase",
+  "description": "Open Source backend for your next SaaS and Mobile app in 1 file.",
+  "kind": "template",
+  "logo": "pocketbase",
+  "category": "backend",
+  "tags": [
+    "pocketbase",
+    "backend",
+    "saas",
+    "mobile",
+    "api"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "pocketbase",
+      "image": "ghcr.io/coollabsio/pocketbase:latest",
+      "exposedPort": 8080,
+      "exposed": true,
+      "volumes": [
+        "pocketbase_data:/app/pb_data",
+        "pocketbase_hooks:/app/pb_hooks"
+      ],
+      "restart": "unless-stopped"
+    }
+  ],
+  "connection": {
+    "title": "Connect to PocketBase",
+    "description": "Your self-hosted PocketBase backend is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "PocketBase URL",
+        "source": "publicUrl:pocketbase",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "Visit your PocketBase URL followed by /_/ to set up your initial superuser account on first deployment."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Embedded Database",
+        "description": "SQLite-backed database with realtime subscriptions."
+      },
+      {
+        "title": "Built-in Auth & Files",
+        "description": "Authentication, user management, and file storage out of the box."
+      },
+      {
+        "title": "Custom JS Hooks",
+        "description": "Easily extend functionality using the persistent pb_hooks volume."
+      }
+    ]
+  }
+}

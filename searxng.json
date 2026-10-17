@@ -1,0 +1,105 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "searxng",
+  "name": "SearXNG",
+  "description": "A privacy-respecting metasearch engine aggregating results from multiple search services.",
+  "kind": "template",
+  "logo": "searxng",
+  "category": "other",
+  "tags": [
+    "search",
+    "metasearch",
+    "privacy"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "redis",
+      "image": "redis:7-alpine",
+      "restart": "unless-stopped",
+      "volumes": [
+        "redis_data:/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 3
+      }
+    },
+    {
+      "name": "searxng",
+      "image": "searxng/searxng:latest",
+      "exposedPort": 8080,
+      "exposed": true,
+      "dependsOn": [
+        "redis"
+      ],
+      "environment": {
+        "INSTANCE_NAME": "searxng",
+        "BASE_URL": "{{publicUrl:searxng}}",
+        "SEARXNG_URL": "{{publicUrl:searxng}}",
+        "SEARXNG_BIND_ADDRESS": "0.0.0.0",
+        "SEARXNG_REDIS_URL": "redis://redis:6379/0"
+      },
+      "secretEnv": [
+        "SEARXNG_SECRET"
+      ],
+      "volumes": [
+        "searxng_data:/etc/searxng"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "wget",
+          "-q",
+          "--spider",
+          "http://127.0.0.1:8080/healthz"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 3
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "searxng",
+      "key": "SEARXNG_SECRET",
+      "label": "SearXNG Secret Key",
+      "generate": "secret",
+      "secret": true
+    }
+  ],
+  "connection": {
+    "title": "SearXNG Instance",
+    "description": "Your private metasearch engine is ready to query.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open SearXNG",
+        "source": "publicUrl:searxng",
+        "kind": "url",
+        "recommended": true
+      }
+    ]
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Private Metasearch",
+        "description": "Aggregates results from multiple search services."
+      }
+    ]
+  }
+}

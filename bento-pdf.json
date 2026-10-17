@@ -1,0 +1,67 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "bento-pdf",
+  "name": "Bento PDF",
+  "description": "Process PDFs entirely in your browser. No uploads. No servers. Complete privacy.",
+  "kind": "template",
+  "logo": "bento-pdf",
+  "category": "other",
+  "tags": [
+    "pdf",
+    "manipulation",
+    "web",
+    "tool"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "bento-pdf",
+      "image": "ghcr.io/alam00000/bentopdf:v1.16.1",
+      "exposedPort": 8080,
+      "exposed": true,
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "wget",
+          "-q",
+          "--spider",
+          "http://127.0.0.1:8080"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "connection": {
+    "title": "Open Bento PDF",
+    "description": "Your fully client-side PDF toolkit is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open Bento PDF",
+        "source": "publicUrl:bento-pdf",
+        "kind": "url",
+        "recommended": true
+      }
+    ]
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "100% Client-Side",
+        "description": "Process PDFs entirely in your browser. No uploads. No servers."
+      },
+      {
+        "title": "Complete Privacy",
+        "description": "Because everything happens locally, your sensitive documents never leave your device."
+      }
+    ]
+  }
+}

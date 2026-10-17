@@ -1,0 +1,73 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "metube",
+  "name": "MeTube",
+  "description": "A web GUI for youtube-dl with playlist support to download videos from YouTube and dozens of other sites.",
+  "kind": "template",
+  "logo": "metube",
+  "category": "other",
+  "tags": [
+    "youtube",
+    "download",
+    "videos",
+    "playlist"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "metube",
+      "image": "ghcr.io/alexta69/metube:latest",
+      "exposedPort": 8081,
+      "exposed": true,
+      "environment": {
+        "UID": "1000",
+        "GID": "1000"
+      },
+      "volumes": [
+        "metube_downloads:/downloads"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://127.0.0.1:8081"
+        ],
+        "interval": "2s",
+        "timeout": "10s",
+        "retries": 15
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "connection": {
+    "title": "Open MeTube",
+    "description": "Your web-based video downloader is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open MeTube",
+        "source": "publicUrl:metube",
+        "kind": "url",
+        "recommended": true
+      }
+    ]
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Video & Playlist Downloads",
+        "description": "Download videos or full playlists from YouTube and dozens of supported sites."
+      },
+      {
+        "title": "Persistent Storage",
+        "description": "Downloaded media is saved directly into the persistent metube_downloads volume."
+      }
+    ]
+  }
+}

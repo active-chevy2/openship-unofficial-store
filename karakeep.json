@@ -1,0 +1,145 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "karakeep",
+  "name": "Karakeep",
+  "description": "A self-hostable bookmark-everything app with AI-based automatic tagging and full-text search.",
+  "kind": "template",
+  "logo": "karakeep",
+  "category": "other",
+  "tags": [
+    "bookmark",
+    "read-it-later",
+    "notes",
+    "search",
+    "ai"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "chrome",
+      "image": "ghcr.io/karakeep-app/karakeep-chrome:release",
+      "commandArgv": [
+        "--no-sandbox",
+        "--disable-gpu",
+        "--disable-dev-shm-usage",
+        "--hide-scrollbars",
+        "--disable-blink-features=AutomationControlled",
+        "--window-size=1440,900"
+      ],
+      "restart": "unless-stopped"
+    },
+    {
+      "name": "meilisearch",
+      "image": "getmeili/meilisearch:v1.41.0",
+      "environment": {
+        "MEILI_NO_ANALYTICS": "true"
+      },
+      "secretEnv": [
+        "MEILI_MASTER_KEY"
+      ],
+      "volumes": [
+        "karakeep_meilisearch:/meili_data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://127.0.0.1:7700/health"
+        ],
+        "interval": "2s",
+        "timeout": "10s",
+        "retries": 15
+      },
+      "restart": "unless-stopped"
+    },
+    {
+      "name": "karakeep",
+      "image": "ghcr.io/karakeep-app/karakeep:0.33.2",
+      "exposedPort": 3000,
+      "exposed": true,
+      "dependsOn": [
+        "meilisearch",
+        "chrome"
+      ],
+      "environment": {
+        "NEXTAUTH_URL": "{{publicUrl:karakeep}}",
+        "MEILI_ADDR": "http://meilisearch:7700",
+        "BROWSER_WEB_URL": "http://chrome:9222",
+        "DISABLE_SIGNUPS": "false",
+        "DATA_DIR": "/data"
+      },
+      "secretEnv": [
+        "NEXTAUTH_SECRET",
+        "MEILI_MASTER_KEY"
+      ],
+      "volumes": [
+        "karakeep_data:/data"
+      ],
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "karakeep",
+      "key": "NEXTAUTH_SECRET",
+      "label": "NextAuth Secret",
+      "help": "Cryptographic key used to salt and encrypt authentication tokens.",
+      "generate": "secret",
+      "secret": true
+    },
+    {
+      "service": "meilisearch",
+      "key": "MEILI_MASTER_KEY",
+      "label": "Meilisearch Master Key",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "karakeep-meili"
+    },
+    {
+      "service": "karakeep",
+      "key": "MEILI_MASTER_KEY",
+      "label": "Karakeep Meilisearch Key",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "karakeep-meili"
+    }
+  ],
+  "connection": {
+    "title": "Open Karakeep",
+    "description": "Your self-hosted bookmark and read-it-later server is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open Karakeep",
+        "source": "publicUrl:karakeep",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "Signups are enabled by default. Register your account on the initial page to become the primary instance user."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Bookmark Everything",
+        "description": "Save links, notes, images, and full-page previews in an organised personal library."
+      },
+      {
+        "title": "Instant Full-Text Search",
+        "description": "Blazing-fast indexing and querying powered by an isolated Meilisearch instance."
+      },
+      {
+        "title": "Automated Page Scraping",
+        "description": "A dedicated headless Chrome container captures accurate page snapshots and metadata."
+      }
+    ]
+  }
+}
