@@ -1,0 +1,120 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "hedgedoc",
+  "name": "HedgeDoc",
+  "description": "Collaborative markdown notes, scratchpads, and documentation platform.",
+  "kind": "template",
+  "logo": "hedgedoc",
+  "category": "other",
+  "tags": [
+    "markdown",
+    "notes",
+    "collaboration",
+    "wiki",
+    "docs"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "database",
+      "image": "postgres:17.7-alpine",
+      "restart": "unless-stopped",
+      "environment": {
+        "POSTGRES_USER": "hedgedoc",
+        "POSTGRES_DB": "hedgedoc"
+      },
+      "secretEnv": [
+        "POSTGRES_PASSWORD"
+      ],
+      "volumes": [
+        "hedgedoc_database:/var/lib/postgresql/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U hedgedoc -d hedgedoc"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      }
+    },
+    {
+      "name": "hedgedoc",
+      "image": "quay.io/hedgedoc/hedgedoc:1.10.8",
+      "exposedPort": 3000,
+      "exposed": true,
+      "dependsOn": [
+        "database"
+      ],
+      "environment": {
+        "CMD_DOMAIN": "{{publicUrl:hedgedoc}}",
+        "CMD_PROTOCOL_USESSL": "true",
+        "CMD_URL_ADDPORT": "false",
+        "CMD_DB_DIALECT": "postgres",
+        "CMD_DB_HOST": "database",
+        "CMD_DB_PORT": "5432",
+        "CMD_DB_USER": "hedgedoc",
+        "CMD_DB_DATABASE": "hedgedoc"
+      },
+      "secretEnv": [
+        "CMD_DB_PASS"
+      ],
+      "volumes": [
+        "hedgedoc_uploads:/hedgedoc/public/uploads"
+      ],
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "service": "database",
+      "key": "POSTGRES_PASSWORD",
+      "label": "Database Password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "hedgedoc-db"
+    },
+    {
+      "service": "hedgedoc",
+      "key": "CMD_DB_PASS",
+      "label": "HedgeDoc Database Password",
+      "generate": "secret",
+      "secret": true,
+      "generateGroup": "hedgedoc-db"
+    }
+  ],
+  "connection": {
+    "title": "Set up HedgeDoc",
+    "description": "Your collaborative markdown workspace is ready.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open HedgeDoc",
+        "source": "publicUrl:hedgedoc",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "Register your initial user account on first visit. The first user to sign up can configure admin privileges."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Collaborative Markdown",
+        "description": "Write, edit, and share notes simultaneously in real-time."
+      },
+      {
+        "title": "Persistent Storage",
+        "description": "Uploads and database records are securely retained across updates in named volumes."
+      }
+    ]
+  }
+}
