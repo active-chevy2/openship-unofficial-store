@@ -128,4 +128,4 @@ Each app file is a JSON object with these main fields:
 
 ## Licence
 
-To be decided. The JSON definitions in this repository are my own work. The apps they describe remain under their upstream licences.
+To be decided. The JSON definitions in this repository are AI-generated. The apps they describe remain under their upstream licences.
