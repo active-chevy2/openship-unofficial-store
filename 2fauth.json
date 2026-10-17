@@ -1,0 +1,93 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "2fauth",
+  "name": "2FAuth",
+  "description": "A self-hosted web app to manage your Two-Factor Authentication (2FA) accounts and generate their security codes.",
+  "kind": "template",
+  "logo": "2fauth",
+  "category": "other",
+  "tags": [
+    "2fa",
+    "security",
+    "authentication"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "2fauth",
+      "image": "2fauth/2fauth:latest",
+      "exposedPort": 8000,
+      "exposed": true,
+      "environment": {
+        "APP_NAME": "2FAuth",
+        "APP_ENV": "production",
+        "APP_DEBUG": "false",
+        "IS_DEMO_APP": "false",
+        "APP_URL": "{{publicUrl:2fauth}}",
+        "LOG_CHANNEL": "daily",
+        "LOG_LEVEL": "notice",
+        "THROTTLE_API": "60",
+        "LOGIN_THROTTLE": "5",
+        "AUTHENTICATION_GUARD": "web-guard",
+        "WEBAUTHN_NAME": "2FAuth",
+        "WEBAUTHN_USER_VERIFICATION": "preferred",
+        "BROADCAST_DRIVER": "log",
+        "QUEUE_DRIVER": "sync",
+        "SESSION_LIFETIME": "120",
+        "DB_CONNECTION": "sqlite",
+        "DB_DATABASE": "/srv/database/database.sqlite"
+      },
+      "secretEnv": [
+        "SITE_OWNER",
+        "APP_KEY"
+      ],
+      "volumes": [
+        "2fauth_data:/2fauth"
+      ],
+      "restart": "unless-stopped"
+    }
+  ],
+  "configFields": [
+    {
+      "key": "SITE_OWNER",
+      "service": "2fauth",
+      "label": "Site Owner Email",
+      "type": "text",
+      "default": "admin@example.com",
+      "required": true
+    },
+    {
+      "key": "APP_KEY",
+      "service": "2fauth",
+      "label": "Application Key",
+      "generate": "secret",
+      "secret": true
+    }
+  ],
+  "connection": {
+    "title": "Set up 2FAuth",
+    "description": "Your 2FA manager is ready. Register your initial account to lock the instance.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open 2FAuth",
+        "source": "publicUrl:2fauth",
+        "kind": "url",
+        "recommended": true
+      }
+    ]
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "2FA Management",
+        "description": "Generate security codes securely from your own server."
+      }
+    ]
+  }
+}
