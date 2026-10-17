@@ -128,4 +128,6 @@ Each app file is a JSON object with these main fields:
 
 ## Licence
 
-To be decided. The JSON definitions in this repository are AI-generated. The apps they describe remain under their upstream licences.
+The JSON app definitions in this repository are released under the [WTFPL](http://www.wtfpl.net/) (Do What The Fuck You Want To Public License), version 2. See the `LICENSE` file for the full text.
+
+This licence applies only to the definitions in this repository. The apps they describe remain under their own upstream licences, and the names, logos and trademarks belong to their owners.
