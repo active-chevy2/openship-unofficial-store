@@ -1,0 +1,72 @@
+{
+  "$schema": "https://openship.io/app.schema.json",
+  "available": true,
+  "id": "mediawiki",
+  "name": "MediaWiki",
+  "description": "MediaWiki is a collaboration and documentation platform brought to you by a vibrant community.",
+  "kind": "template",
+  "logo": "mediawiki",
+  "category": "cms",
+  "tags": [
+    "wiki",
+    "collaboration",
+    "documentation"
+  ],
+  "framework": "docker-compose",
+  "services": [
+    {
+      "name": "mediawiki",
+      "image": "mediawiki:latest",
+      "exposedPort": 80,
+      "exposed": true,
+      "volumes": [
+        "mediawiki_images:/var/www/html/images",
+        "mediawiki_sqlite:/var/www/html/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:80"
+        ],
+        "interval": "5s",
+        "timeout": "20s",
+        "retries": 10
+      },
+      "restart": "unless-stopped"
+    }
+  ],
+  "connection": {
+    "title": "Set up MediaWiki",
+    "description": "Your MediaWiki container is up and ready for initial configuration.",
+    "guide": {
+      "defaultMode": "public"
+    },
+    "outputs": [
+      {
+        "id": "url",
+        "label": "Open MediaWiki",
+        "source": "publicUrl:mediawiki",
+        "kind": "url",
+        "recommended": true
+      }
+    ],
+    "firstLogin": {
+      "note": "Visit your MediaWiki URL to complete the web setup wizard. After downloading LocalSettings.php, you can inject it via OpenShip's files configuration."
+    }
+  },
+  "verified": true,
+  "marketplace": {
+    "features": [
+      {
+        "title": "Wikipedia-Powered Engine",
+        "description": "The exact same open-source software powering Wikipedia and thousands of wiki communities."
+      },
+      {
+        "title": "Persistent Media & SQLite Data",
+        "description": "Uploads and lightweight SQLite database files remain safely stored across updates in named volumes."
+      }
+    ]
+  }
+}
